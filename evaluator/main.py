@@ -1,9 +1,6 @@
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).parent
-sys.path.append(str(PROJECT_ROOT))
-
 from evaluator.args_parser import parse_args
 from evaluator.load_data import load_df
 from evaluator.logger import get_logger
@@ -23,7 +20,7 @@ def main():
     if parsed_args.no_cache:
         cache_path = None
     else:
-        cache_path = Path("evaluator_results")
+        cache_path = Path("data/eval_results")
         if parsed_args.debug:
             cache_path = cache_path / "debug"
 

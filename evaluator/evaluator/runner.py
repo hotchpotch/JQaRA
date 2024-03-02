@@ -31,7 +31,7 @@ def _pick_qrels(df: pd.DataFrame) -> Qrels:
 def _qrels(df: pd.DataFrame, cache_path: Path | None = None) -> Qrels:
     if cache_path is not None:
         qrels_file_name = "qrels"
-        qrels_file_path = cache_path / f"qrels/{qrels_file_name}.trec.gz"
+        qrels_file_path = cache_path / f"qrels/{qrels_file_name}.gz"
         if qrels_file_path.exists():
             LOGGER.debug(f"Load qrels from cache: {qrels_file_path}")
             return Qrels.from_file(str(qrels_file_path))
@@ -81,7 +81,7 @@ def _run(
         runs_file_name = f"{run_name}"
         if without_title:
             runs_file_name = f"{runs_file_name}_without_title"
-        runs_file_path = cache_path / f"runs/{runs_file_name}.trec.gz"
+        runs_file_path = cache_path / f"runs/{runs_file_name}.gz"
         if runs_file_path.exists():
             LOGGER.debug(f"Load run from cache: {runs_file_path}")
             return Run.from_file(str(runs_file_path), name=run_name)
