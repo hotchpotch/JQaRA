@@ -1,37 +1,15 @@
-import json
-import os
 import re
-from argparse import ArgumentParser
-from functools import lru_cache
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import torch
-from datasets import load_dataset, load_from_disk  # type: ignore
-from ranx import Qrels, Run, compare, evaluate
+from ranx import Qrels, Run
 from tqdm import tqdm
 
-from reranker_factory import reranker_factory
-
 from .logger import get_logger
-
-DATASET_NAME = "hotchpotch/JQaRA"
-DATASET_SPLIT = "test"
+from .reranker_factory import reranker_factory
 
 LOGGER = get_logger()
-
-
-def _load_ds():
-    return load_dataset(DATASET_NAME, split=DATASET_SPLIT)
-
-
-def _load_df():
-    df = _load_ds.to_pandas()  # type: ignore
-    df_q_id = df.groupby(["q_id", "question"]).agg(  # type: ignore
-        {"passage_id": list, "label": list, "text": list, "title": list}
-    )
-    return df_q_id
 
 
 def _pick_qrels(df: pd.DataFrame) -> Qrels:
@@ -53,13 +31,14 @@ def _pick_qrels(df: pd.DataFrame) -> Qrels:
 def _qrels(df: pd.DataFrame, cache_path: Path | None = None) -> Qrels:
     if cache_path is not None:
         qrels_file_name = "qrels"
-        qrels_file_path = cache_path / f"qrels/{qrels_file_name}.lz4"
+        qrels_file_path = cache_path / f"qrels/{qrels_file_name}.trec.gz"
         if qrels_file_path.exists():
             LOGGER.debug(f"Load qrels from cache: {qrels_file_path}")
             return Qrels.from_file(str(qrels_file_path))
     qrel = _pick_qrels(df)
     if cache_path is not None:
         LOGGER.debug(f"Save qrels to cache: {qrels_file_path}")
+        qrels_file_path.parent.mkdir(parents=True, exist_ok=True)
         qrel.save(str(qrels_file_path))
     return qrel
 
@@ -72,14 +51,14 @@ def _run_rerank(
     LOGGER.debug(f"- Reranker: {reranker}")
 
     run_dict = {}
-    for group_keys, (passage_id, labels, texts, titles) in tqdm(
+    for group_keys, (p_id, labels, texts, titles) in tqdm(
         df.iterrows(), total=len(df), desc=reranker_name
     ):
         q_id, question = group_keys  # type: ignore
         if not without_title:
             texts = [f"{title} {text}" for title, text in zip(titles, texts)]
         reranked_index, scores = reranker.rerank(question, texts)
-        run_dict[q_id] = dict(zip(passage_id, scores))
+        run_dict[q_id] = dict(zip(p_id, scores))
     run = Run(run_dict, name=run_name)
     del reranker
     torch.cuda.empty_cache()
@@ -102,7 +81,7 @@ def _run(
         runs_file_name = f"{run_name}"
         if without_title:
             runs_file_name = f"{runs_file_name}_without_title"
-        runs_file_path = cache_path / f"runs/{runs_file_name}.lz4"
+        runs_file_path = cache_path / f"runs/{runs_file_name}.trec.gz"
         if runs_file_path.exists():
             LOGGER.debug(f"Load run from cache: {runs_file_path}")
             return Run.from_file(str(runs_file_path), name=run_name)
@@ -115,19 +94,17 @@ def _run(
     )
     if cache_path is not None:
         LOGGER.debug(f"Save run to cache: {runs_file_path}")
+        runs_file_path.parent.mkdir(parents=True, exist_ok=True)
         run.save(str(runs_file_path))
     return run
 
 
 def runner(
     reranker_names: list[str],
+    df: pd.DataFrame,
     without_title: bool,
     cache_path: Path | None = None,
-    n_samples: int | None = None,
 ):
-    df = _load_df()
-    if n_samples is not None:
-        df = df.head(n_samples)
     qrel = _qrels(df, cache_path=cache_path)
     runs: list[Run] = []
     for reranker_name in reranker_names:
