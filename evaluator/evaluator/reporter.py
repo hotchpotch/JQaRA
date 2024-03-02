@@ -8,6 +8,7 @@ def compare_report(qrels: Qrels, runs: list[Run], metrics: list[str], max_p=0.01
         runs=runs,
         metrics=metrics,
         max_p=max_p,
+        make_comparable=True,
     )
     return report
 

@@ -11,11 +11,11 @@ from evaluator.runner import runner
 def main():
     parsed_args = parse_args()
     logger = get_logger()
-    if parsed_args.verbose:
+    if parsed_args.verbose or parsed_args.debug:
         logger.setLevel("DEBUG")
     n_samples = None
     if parsed_args.debug:
-        n_samples = 100
+        n_samples = 20
 
     if parsed_args.no_cache:
         cache_path = None
@@ -33,7 +33,7 @@ def main():
     df = load_df()
     logger.info(f"Load data: {len(df)}")
     if n_samples is not None:
-        df = df.sample(n_samples)
+        df = df.head(n_samples)
         logger.info(f"Use {n_samples} samples for debug mode")
 
     qrel, runs = runner(
