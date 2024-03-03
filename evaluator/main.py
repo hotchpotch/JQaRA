@@ -31,7 +31,7 @@ def main():
         reranker_names.append(reranker_name)
 
     df = load_df()
-    logger.info(f"Load data: {len(df)}")
+    logger.info(f"Load JQaRA: size -> {len(df)}")
     if n_samples is not None:
         df = df.head(n_samples)
         logger.info(f"Use {n_samples} samples for debug mode")
