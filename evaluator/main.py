@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 
 from evaluator.args_parser import parse_args
