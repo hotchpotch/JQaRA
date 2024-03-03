@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-DEFAULT_METRICS = "ndcg@10,mrr@10,ndcg@100,mrr@100,hit_rate@100"
+DEFAULT_METRICS = "ndcg@10,mrr@10,ndcg@100,mrr@100"
 
 
 def parse_args():

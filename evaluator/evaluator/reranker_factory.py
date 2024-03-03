@@ -4,12 +4,15 @@ from reranker.bge_m3_reranker import BGEM3Reranker
 from reranker.bm25_reranker import BM25Reranker
 from reranker.colbert_reranker import ColbertReranker
 from reranker.cross_encoder_reranker import CrossEncoderReranker
+from reranker.openai_embeddings_reranker import OpenAIEmbeddingsReranker
 from reranker.sentence_transformer_reranker import SentenceTransformerReranker
 
 
 def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
-    if "bm25" in model_name:
+    if "bm25" == model_name:
         return BM25Reranker()
+    elif "text-embedding-" in model_name:
+        return OpenAIEmbeddingsReranker(model_name)
     elif "-e5-" in model_name:
         if "+query" in model_name:
             model_name = model_name.replace("+query", "")
@@ -71,12 +74,6 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
                 use_fp16=use_fp16,
                 targets=[("dense", "1.0")],
             )
-    elif "simcse-ja-base" in model_name:
-        return SentenceTransformerReranker(
-            model_name,
-            device=device,
-            use_fp16=use_fp16,
-        )
     elif "colbert" in model_name or "ColBERT" in model_name:
         return ColbertReranker(
             model_name,
