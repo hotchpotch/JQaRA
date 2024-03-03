@@ -81,7 +81,7 @@ JAQKET の質問データから、Wikipedia から質問に関連するであろ
 
 質問文から関連する文章の取得には、Embeddings モデルを用いた文ベクトルの類似度で評価視しています。また一つの Embeddings モデルでは偏りが発生してしまうため、多様性を確保するために 5 種類の Embeddings モデル[intfloat/multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large), [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3), [cl-nagoya/sup-simcse-ja-base](https://huggingface.co/cl-nagoya/sup-simcse-ja-base), [pkshatech/GLuCoSE-base-ja](https://huggingface.co/pkshatech/GLuCoSE-base-ja), [OpenAI/text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings) を利用します。
 
-また 400 文字以内になるように分割された Wikipedia 文データは、約 560 万文存在します。そのため、現実的な速度で検索が可能になるよう、Embeddings モデルを用いて文ベクトルに変換した後、IVF(Inverted File Index)と量子化(IVFPQ)を使い、高速にベクトル検索が可能な状態にします。なおベクトル検索のライブラリには FAISS を用いており、IVFPQ のパラメータは IVF の nlist に 2048、PQ は Embeddings モデルの埋め込みベクトルの次元数/4(例: e5-large は 1024 次元なので、PQ=4/1024=256)としています。
+また 400 文字以内になるように分割された Wikipedia 文データは、約 560 万文存在します。そのため、現実的な速度で検索が可能になるよう、Embeddings モデルを用いて文ベクトルに変換した後、IVF(Inverted File Index)と量子化(IVFPQ)を使い、高速にベクトル検索が可能な状態にします。なおベクトル検索のライブラリには FAISS を用いており、IVFPQ のパラメータは IVF の nlist に 2048、PQ は Embeddings モデルの埋め込みベクトルの次元数/4(例: e5-large は 1024 次元なので、PQ=1024/4=256)としています。
 
 これらを使い、質問文各々に最も類似する上位 500 の文章 x 5 種類の Embeddings モデルの結果を得ます。その後、これら 5 つの結果を RRF(Reciprocal Rank Fusion)を用いてランク付けしなおし、スコアが高い上位 100 文を抽出しました。これらの文と、その文が含まれる Wikipedia 記事タイトルを、質問文に紐付けします。
 
