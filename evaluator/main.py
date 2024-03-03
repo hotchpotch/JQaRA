@@ -4,7 +4,7 @@ from pathlib import Path
 from evaluator.args_parser import parse_args
 from evaluator.load_data import load_df
 from evaluator.logger import get_logger
-from evaluator.reporter import compare_report, report_to_df
+from evaluator.reporter import compare_report, reporters
 from evaluator.runner import runner
 
 
@@ -24,6 +24,7 @@ def main():
         if parsed_args.debug:
             cache_path = cache_path / "debug"
 
+    reporter = reporters[parsed_args.output_format]
     reranker_names = []
     for reranker_name in parsed_args.models:
         if isinstance(reranker_name, list):
@@ -51,15 +52,8 @@ def main():
         metrics=report_metrics,
         max_p=max_p,
     )
-    print(report.to_table())
-
-    csv_path = parsed_args.output_csv
-    if csv_path is not None:
-        csv_path = Path(csv_path)
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
-        report_df = report_to_df(report)
-        report_df.to_csv(csv_path)
-        logger.info(f"Save report to {csv_path}")
+    report_text = reporter(report)
+    print(report_text)
 
 
 if __name__ == "__main__":

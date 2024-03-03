@@ -27,17 +27,19 @@ def parse_args():
         action="store_true",
     )
     args.add_argument(
-        "-o",
-        "--output_csv",
-        help="output csv file path, example: ./report.csv",
+        "-f",
+        "--output_format",
+        help="output format, choose from table, markdown, csv, latex",
         type=str,
-        default=None,
+        choices=["table", "markdown", "csv", "latex", "markdown+link"],
+        default="table",
     )
+
     args.add_argument(
         "--max_p_value",
         type=float,
         default=0.01,
-        help="max p value for fisher test",
+        help="Set the maximum p-value threshold for the Fisher's test, used only when the output format is 'table'.",
     )
     args.add_argument("--without_title", action="store_true")
     parsed_args = args.parse_args()
