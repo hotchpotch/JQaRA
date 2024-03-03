@@ -1,13 +1,16 @@
 import torch
 
 from reranker.bge_m3_reranker import BGEM3Reranker
+from reranker.bm25_reranker import BM25Reranker
 from reranker.colbert_reranker import ColbertReranker
 from reranker.cross_encoder_reranker import CrossEncoderReranker
 from reranker.sentence_transformer_reranker import SentenceTransformerReranker
 
 
 def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
-    if "-e5-" in model_name:
+    if "bm25" in model_name:
+        return BM25Reranker()
+    elif "-e5-" in model_name:
         if "+query" in model_name:
             model_name = model_name.replace("+query", "")
             query_prefix = "query: "
