@@ -34,22 +34,41 @@ def report_to_dataframe(report: Report, round_digits: int | None = 4) -> pd.Data
     return df
 
 
-def report_to_table(report: Report) -> str:
+def report_to_table(report: Report, reranker_names: list[str]) -> str:
     return report.to_table()
 
 
-def report_to_markdown(report: Report) -> str:
+def report_to_markdown(report: Report, reranker_names: list[str]) -> str:
     df = report_to_dataframe(report)
     return df.to_markdown(index=False)
 
 
-def report_to_latex(report: Report) -> str:
+def report_to_latex(report: Report, reranker_names: list[str]) -> str:
     return report.to_latex()
 
 
-def report_to_csv(report: Report) -> str:
+def report_to_csv(report: Report, reranker_names: list[str]) -> str:
     df = report_to_dataframe(report)
     return df.to_csv(index=False)
+
+
+def report_to_markdown_with_links(report: Report, reranker_names: list[str]) -> str:
+    df = report_to_dataframe(report)
+
+    def reranker_name_to_link(name: str) -> str:
+        if "text-embedding-" in name:
+            return f"[{name}](https://platform.openai.com/docs/guides/embeddings)"
+        elif "bm25" == name:
+            return name
+        else:
+            hf_name = name.split("+")[0]  # BAAI/bge-m3+all -> BAAI/bge-m3
+            name = name.split("/")[-1]  # BAAI/bge-m3+all -> bge-m3+all
+            hf_url = f"https://huggingface.co/{hf_name}"
+            return f"[{name}]({hf_url})"
+
+    reranker_name_with_links = [reranker_name_to_link(name) for name in reranker_names]
+    df["model_names"] = reranker_name_with_links
+    return df.to_markdown(index=False)
 
 
 reporters = {
@@ -57,5 +76,5 @@ reporters = {
     "markdown": report_to_markdown,
     "latex": report_to_latex,
     "csv": report_to_csv,
-    "dataframe": report_to_dataframe,
+    "markdown_with_links": report_to_markdown_with_links,
 }

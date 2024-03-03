@@ -32,7 +32,7 @@ def main():
         reranker_names.append(reranker_name)
 
     df = load_df()
-    logger.info(f"Load JQaRA: size -> {len(df)}")
+    logger.info(f"Load JQaRA: total -> {len(df)}")
     if n_samples is not None:
         df = df.head(n_samples)
         logger.info(f"Use {n_samples} samples for debug mode")
@@ -40,7 +40,6 @@ def main():
     qrel, runs = runner(
         reranker_names=reranker_names,
         df=df,
-        without_title=parsed_args.without_title,
         cache_path=cache_path,
     )
 
@@ -52,7 +51,8 @@ def main():
         metrics=report_metrics,
         max_p=max_p,
     )
-    report_text = reporter(report)
+
+    report_text = reporter(report, reranker_names)
     print(report_text)
 
 

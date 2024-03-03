@@ -31,7 +31,7 @@ def parse_args():
         "--output_format",
         help="output format, choose from table, markdown, csv, latex",
         type=str,
-        choices=["table", "markdown", "csv", "latex", "markdown+link"],
+        choices=["table", "markdown", "csv", "latex", "markdown_with_links"],
         default="table",
     )
 
@@ -39,8 +39,8 @@ def parse_args():
         "--max_p_value",
         type=float,
         default=0.01,
-        help="Set the maximum p-value threshold for the Fisher's test, used only when the output format is 'table'.",
+        help="Set the maximum p-value threshold for the  statistical test, used only when the output format is 'table'.",
     )
-    args.add_argument("--without_title", action="store_true")
+    # args.add_argument("--without_title", action="store_true")
     parsed_args = args.parse_args()
     return parsed_args

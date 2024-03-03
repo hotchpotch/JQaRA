@@ -102,7 +102,7 @@ def _run(
 def runner(
     reranker_names: list[str],
     df: pd.DataFrame,
-    without_title: bool,
+    without_title: bool = False,
     cache_path: Path | None = None,
 ):
     qrel = _qrels(df, cache_path=cache_path)
