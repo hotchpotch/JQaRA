@@ -147,7 +147,7 @@ JQaRA データセットのライセンスは、"question", "answers" カラム�
 
 ```
 @misc{yuichi-tateno-2024-jqara,,
-    url={https://github.com/hotchpotch/JQaRA},
+    url={https://huggingface.co/datasets/hotchpotch/JQaRA},
     title={JQaRA: Japanese Question Answering with Retrieval Augmentation - 検索拡張(RAG)評価のための日本語Q&Aデータセット},
     author={Yuichi Tateno}
 }
