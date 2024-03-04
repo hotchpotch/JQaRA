@@ -11,3 +11,4 @@ torch
 transformers
 datasets
 sentencepiece
+datasketch

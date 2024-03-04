@@ -4,13 +4,19 @@ from reranker.bge_m3_reranker import BGEM3Reranker
 from reranker.bm25_reranker import BM25Reranker
 from reranker.colbert_reranker import ColbertReranker
 from reranker.cross_encoder_reranker import CrossEncoderReranker
+from reranker.minhash_reranker import MinHashReranker
 from reranker.openai_embeddings_reranker import OpenAIEmbeddingsReranker
+from reranker.random_reranker import RandomReranker
 from reranker.sentence_transformer_reranker import SentenceTransformerReranker
 
 
 def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
     if "bm25" == model_name:
         return BM25Reranker()
+    elif "minhash" in model_name:
+        return MinHashReranker()
+    elif "random" in model_name:
+        return RandomReranker()
     elif "text-embedding-" in model_name:
         return OpenAIEmbeddingsReranker(model_name)
     elif "-e5-" in model_name:
