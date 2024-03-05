@@ -162,3 +162,5 @@ debug/
 
 # for local
 exp*
+tmp*
+ignore*
