@@ -71,7 +71,7 @@ class ColbertReranker(BaseReranker):
         self.model = AutoModel.from_pretrained(model_name)
         self.device = device
         self.model.to(device)
-        if use_fp16:
+        if use_fp16 and "cuda" in device:
             self.model.half()
         self.model.eval()
         self.model.max_length = max_length
