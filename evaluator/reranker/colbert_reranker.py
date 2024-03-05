@@ -4,6 +4,71 @@ from transformers import AutoModel, AutoTokenizer
 from .base_reranker import BaseReranker
 
 
+def _insert_token(
+    output: dict,
+    insert_token_id: int,
+    insert_position: int = 1,
+    token_type_id: int = 0,
+    attention_value: int = 1,
+):
+    """
+    Inserts a new token at a specified position into the sequences of a tokenized representation.
+
+    This function takes a dictionary containing tokenized representations
+    (e.g., 'input_ids', 'token_type_ids', 'attention_mask') as PyTorch tensors,
+    and inserts a specified token into each sequence at the given position.
+    This can be used to add special tokens or other modifications to tokenized inputs.
+
+    Parameters:
+    - output (dict): A dictionary containing the tokenized representations. Expected keys
+                     are 'input_ids', 'token_type_ids', and 'attention_mask'. Each key
+                     is associated with a PyTorch tensor.
+    - insert_token_id (int): The token ID to be inserted into each sequence.
+    - insert_position (int, optional): The position in the sequence where the new token
+                                       should be inserted. Defaults to 1, which typically
+                                       follows a special starting token like '[CLS]' or '[BOS]'.
+    - token_type_id (int, optional): The token type ID to assign to the inserted token.
+                                     Defaults to 0.
+    - attention_value (int, optional): The attention mask value to assign to the inserted token.
+                                        Defaults to 1.
+
+    Returns:
+    - updated_output (dict): A dictionary containing the updated tokenized representations,
+                             with the new token inserted at the specified position in each sequence.
+                             The structure and keys of the output dictionary are the same as the input.
+    """
+    updated_output = {}
+    for key in output:
+        updated_tensor_list = []
+        for seqs in output[key]:
+            if len(seqs.shape) == 1:
+                seqs = seqs.unsqueeze(0)
+            for seq in seqs:
+                first_part = seq[:insert_position]
+                second_part = seq[insert_position:]
+                new_element = (
+                    torch.tensor([insert_token_id])
+                    if key == "input_ids"
+                    else torch.tensor([token_type_id])
+                )
+                if key == "attention_mask":
+                    new_element = torch.tensor([attention_value])
+                updated_seq = torch.cat((first_part, new_element, second_part), dim=0)
+                updated_tensor_list.append(updated_seq)
+        updated_output[key] = torch.stack(updated_tensor_list)
+    return updated_output
+
+
+def _colbert_score(q_reps, p_reps, q_mask: torch.Tensor, p_mask: torch.Tensor):
+    # calc max sim
+    # base code from: https://github.com/FlagOpen/FlagEmbedding/blob/master/FlagEmbedding/BGE_M3/modeling.py
+    token_scores = torch.einsum("qin,pjn->qipj", q_reps, p_reps)
+    token_scores = token_scores.masked_fill(p_mask.unsqueeze(0).unsqueeze(0) == 0, -1e4)
+    scores, _ = token_scores.max(-1)
+    scores = scores.sum(1) / q_mask[:, 1:].sum(-1, keepdim=True)
+    return scores
+
+
 class ColbertReranker(BaseReranker):
     def __init__(
         self,
@@ -11,53 +76,62 @@ class ColbertReranker(BaseReranker):
         device: str = "auto",
         use_fp16=True,
         max_length=512,
+        query_token: str = "[unused0]",
+        document_token: str = "[unused1]",
+        normalize: bool = True,
     ):
         device = self._detect_device(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name)
         self.device = device
         self.model.to(device)
-        if use_fp16:
+        if use_fp16 and "cuda" in device:
             self.model.half()
         self.model.eval()
         self.model.max_length = max_length
         self.max_length = max_length
+        self.query_token_id: int = self.tokenizer.convert_tokens_to_ids(query_token)  # type: ignore
+        self.document_token_id: int = self.tokenizer.convert_tokens_to_ids(document_token)  # type: ignore
+        self.normalize = normalize
 
-    # base from: https://github.com/run-llama/llama_index/blob/main/llama-index-integrations/postprocessor/llama-index-postprocessor-colbert-rerank/llama_index/postprocessor/colbert_rerank/base.py
-    def _rerank(self, query: str, documents: list[str]) -> list[float]:
-        query_encoding = self.tokenizer(
-            query,
+    def _encode(self, texts: list[str], insert_token_id: int):
+        encoding = self.tokenizer(
+            texts,
             return_tensors="pt",
-            max_length=self.max_length,
-            truncation="longest_first",
+            padding=True,
+            max_length=self.max_length - 1,  # for insert token
+            truncation=True,
         )
-        query_encoding = {
-            key: value.to(self.device) for key, value in query_encoding.items()
-        }
+        encoding = _insert_token(encoding, insert_token_id)  # type: ignore
+        encoding = {key: value.to(self.device) for key, value in encoding.items()}
+        return encoding
+
+    def _query_encode(self, query: list[str]):
+        return self._encode(query, self.query_token_id)
+
+    def _document_encode(self, documents: list[str]):
+        return self._encode(documents, self.document_token_id)
+
+    def _to_embs(self, encoding) -> torch.Tensor:
         with torch.no_grad():
-            query_embedding = self.model(**query_encoding).last_hidden_state
-        rerank_score_list = []
+            embs = self.model(**encoding).last_hidden_state.squeeze(1)
+        if self.normalize:
+            embs = embs / embs.norm(dim=-1, keepdim=True)
+        return embs
 
-        for document_text in documents:
-            document_encoding = self.tokenizer(
-                document_text,
-                return_tensors="pt",
-                truncation="longest_first",
-                max_length=self.max_length,
+    def _rerank(self, query: str, documents: list[str]) -> list[float]:
+        query_encoding = self._query_encode([query])
+        documents_encoding = self._document_encode(documents)
+        query_embeddings = self._to_embs(query_encoding)
+        document_embeddings = self._to_embs(documents_encoding)
+        scores = (
+            _colbert_score(
+                query_embeddings,
+                document_embeddings,
+                query_encoding["attention_mask"],
+                documents_encoding["attention_mask"],
             )
-            document_encoding = {
-                key: value.to(self.device) for key, value in document_encoding.items()
-            }
-            with torch.no_grad():
-                document_embedding = self.model(**document_encoding).last_hidden_state
-
-            sim_matrix = torch.nn.functional.cosine_similarity(
-                query_embedding.unsqueeze(2), document_embedding.unsqueeze(1), dim=-1
-            )
-
-            max_sim_scores, _ = torch.max(sim_matrix, dim=2)
-            rerank_score_list.append(torch.mean(max_sim_scores, dim=1))
-        sorted_scores = torch.stack(rerank_score_list).cpu().numpy()
-        sorted_scores = sorted_scores.flatten().tolist()
-
-        return sorted_scores
+            .cpu()
+            .tolist()[0]
+        )
+        return scores
