@@ -25,45 +25,46 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 
 ### 評価結果
 
-以下はさまざまなモデルの評価結果です。評価は nDCG@10 以外にも、参考までにいくつかの指標を表示しています。
+以下はさまざまなモデルの評価結果です。評価は nDCG@10 以外にも、参考まで MRR@10 の数値も掲載しています。
 
 #### 文ベクトルモデル
 
-| model_names                                                                     | ndcg@10 | mrr@10 | ndcg@100 | mrr@100 |
-| :------------------------------------------------------------------------------ | ------: | -----: | -------: | ------: |
-| [bge-m3+dense](https://huggingface.co/BAAI/bge-m3)                              |   0.539 | 0.7854 |   0.7206 |  0.7884 |
-| [fio-base-japanese-v0.1](https://huggingface.co/bclavie/fio-base-japanese-v0.1) |  0.3718 | 0.6161 |   0.6077 |  0.6219 |
-| [sup-simcse-ja-base](https://huggingface.co/cl-nagoya/sup-simcse-ja-base)       |  0.3237 | 0.5407 |   0.5722 |  0.5504 |
-| [sup-simcse-ja-large](https://huggingface.co/cl-nagoya/sup-simcse-ja-large)     |  0.3571 |  0.575 |   0.5955 |   0.583 |
-| [unsup-simcse-ja-base](https://huggingface.co/cl-nagoya/unsup-simcse-ja-base)   |  0.3121 | 0.5209 |   0.5664 |  0.5298 |
-| [unsup-simcse-ja-large](https://huggingface.co/cl-nagoya/unsup-simcse-ja-large) |  0.3928 | 0.6257 |   0.6217 |  0.6321 |
-| [multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large)  |   0.554 | 0.7988 |    0.731 |  0.8011 |
-| [multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small)  |  0.4917 | 0.7291 |   0.6894 |  0.7325 |
-| [GLuCoSE-base-ja](https://huggingface.co/pkshatech/GLuCoSE-base-ja)             |  0.3085 | 0.5179 |   0.5643 |  0.5268 |
-| [text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings)    |  0.3881 | 0.6107 |   0.6173 |  0.6171 |
+| model_names                                                                     | ndcg@10 | mrr@10 |
+| :------------------------------------------------------------------------------ | ------: | -----: |
+| [bge-m3+dense](https://huggingface.co/BAAI/bge-m3)                              |   0.539 | 0.7854 |
+| [fio-base-japanese-v0.1](https://huggingface.co/bclavie/fio-base-japanese-v0.1) |  0.3718 | 0.6161 |
+| [sup-simcse-ja-base](https://huggingface.co/cl-nagoya/sup-simcse-ja-base)       |  0.3237 | 0.5407 |
+| [sup-simcse-ja-large](https://huggingface.co/cl-nagoya/sup-simcse-ja-large)     |  0.3571 |  0.575 |
+| [unsup-simcse-ja-base](https://huggingface.co/cl-nagoya/unsup-simcse-ja-base)   |  0.3121 | 0.5209 |
+| [unsup-simcse-ja-large](https://huggingface.co/cl-nagoya/unsup-simcse-ja-large) |  0.3928 | 0.6257 |
+| [multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large)  |   0.554 | 0.7988 |
+| [multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small)  |  0.4917 | 0.7291 |
+| [GLuCoSE-base-ja](https://huggingface.co/pkshatech/GLuCoSE-base-ja)             |  0.3085 | 0.5179 |
+| [text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings)    |  0.3881 | 0.6107 |
 
 #### ColBERT モデル
 
-| model_names                                           | ndcg@10 | mrr@10 | ndcg@100 | mrr@100 |
-| :---------------------------------------------------- | ------: | -----: | -------: | ------: |
-| [bge-m3+colbert](https://huggingface.co/BAAI/bge-m3)  |  0.5656 | 0.8095 |   0.7371 |  0.8119 |
-| [JaColBERT](https://huggingface.co/bclavie/JaColBERT) |  0.5495 | 0.8108 |   0.7297 |  0.8137 |
+| model_names                                               | ndcg@10 | mrr@10 |
+| :-------------------------------------------------------- | ------: | -----: |
+| [bge-m3+colbert](https://huggingface.co/BAAI/bge-m3)      |  0.5656 | 0.8095 |
+| [JaColBERT](https://huggingface.co/bclavie/JaColBERT)     |  0.5495 | 0.8108 |
+| [JaColBERTv2](https://huggingface.co/bclavie/JaColBERTv2) |  0.5847 | 0.8356 |
 
 #### CrossEncoder モデル
 
-| model_names                                                                                                             | ndcg@10 | mrr@10 | ndcg@100 | mrr@100 |
-| :---------------------------------------------------------------------------------------------------------------------- | ------: | -----: | -------: | ------: |
-| [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)                                                      |  0.2445 | 0.4378 |    0.522 |  0.4504 |
-| [bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large)                                                    |  0.4718 | 0.7108 |   0.6791 |  0.7149 |
-| [cross-encoder-mmarco-mMiniLMv2-L12-H384-v1](https://huggingface.co/corrius/cross-encoder-mmarco-mMiniLMv2-L12-H384-v1) |  0.5588 | 0.8107 |   0.7325 |  0.8139 |
+| model_names                                                                                                             | ndcg@10 | mrr@10 |
+| :---------------------------------------------------------------------------------------------------------------------- | ------: | -----: |
+| [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)                                                      |  0.2445 | 0.4378 |
+| [bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large)                                                    |  0.4718 | 0.7108 |
+| [cross-encoder-mmarco-mMiniLMv2-L12-H384-v1](https://huggingface.co/corrius/cross-encoder-mmarco-mMiniLMv2-L12-H384-v1) |  0.5588 | 0.8107 |
 
 #### その他モデル
 
-| model_names                                         | ndcg@10 | mrr@10 | ndcg@100 | mrr@100 |
-| :-------------------------------------------------- | ------: | -----: | -------: | ------: |
-| [bge-m3+all](https://huggingface.co/BAAI/bge-m3)    |   0.576 | 0.8178 |   0.7454 |  0.8202 |
-| [bge-m3+sparse](https://huggingface.co/BAAI/bge-m3) |  0.5088 | 0.7596 |   0.7017 |  0.7626 |
-| bm25                                                |   0.458 |  0.702 |   0.6701 |   0.706 |
+| model_names                                         | ndcg@10 | mrr@10 |
+| :-------------------------------------------------- | ------: | -----: |
+| [bge-m3+all](https://huggingface.co/BAAI/bge-m3)    |   0.576 | 0.8178 |
+| [bge-m3+sparse](https://huggingface.co/BAAI/bge-m3) |  0.5088 | 0.7596 |
+| bm25                                                |   0.458 |  0.702 |
 
 ---
 
