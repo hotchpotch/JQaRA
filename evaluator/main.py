@@ -6,6 +6,8 @@ from evaluator.logger import get_logger
 from evaluator.reporter import compare_report, reporters
 from evaluator.runner import runner
 
+DEFAULT_CACHE_PATH = Path(__file__).parent / "data/eval_results"
+
 
 def main():
     parsed_args = parse_args()
@@ -19,7 +21,7 @@ def main():
     if parsed_args.no_cache:
         cache_path = None
     else:
-        cache_path = Path("data/eval_results")
+        cache_path = DEFAULT_CACHE_PATH
         if parsed_args.debug:
             cache_path = cache_path / "debug"
 
