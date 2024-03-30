@@ -1,6 +1,7 @@
 import torch
 
 from reranker.bge_m3_reranker import BGEM3Reranker
+from reranker.bge_reranker import BgeReranker
 from reranker.bm25_reranker import BM25Reranker
 from reranker.colbert_reranker import ColbertReranker
 from reranker.cross_encoder_reranker import CrossEncoderReranker
@@ -87,13 +88,19 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
             use_fp16=use_fp16,
         )
     elif "bge-reranker" in model_name:
-        return CrossEncoderReranker(
+        return BgeReranker(
             model_name,
-            default_activation_function=torch.nn.Identity(),  # for BGE
             device=device,
             use_fp16=use_fp16,
         )
-    elif "ce-" in model_name or "cross-encoder" in model_name:
+    elif "cl-nagoya/shioriha-large-reranker" in model_name:
+        return CrossEncoderReranker(
+            model_name,
+            device=device,
+            default_activation_function=torch.nn.Identity(),
+            use_fp16=use_fp16,
+        )
+    elif "ce-" in model_name or "cross-encoder" in model_name or "exp" in model_name or "reranker":
         return CrossEncoderReranker(
             model_name,
             device=device,
