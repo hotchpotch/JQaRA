@@ -54,6 +54,13 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 
 | model_names                                                                                                             | ndcg@10 | mrr@10 |
 | :---------------------------------------------------------------------------------------------------------------------- | ------: | -----: |
+| [japanese-reranker-cross-encoder-xsmall-v1](https://huggingface.co/hotchpotch/japanese-reranker-cross-encoder-xsmall-v1) |    0.6136 |   0.8402 |
+| [japanese-reranker-cross-encoder-small-v1](https://huggingface.co/hotchpotch/japanese-reranker-cross-encoder-small-v1)   |    0.6247 |   0.8599 |
+| [japanese-reranker-cross-encoder-base-v1](https://huggingface.co/hotchpotch/japanese-reranker-cross-encoder-base-v1)     |    0.6711 |   0.8809 |
+| [japanese-reranker-cross-encoder-large-v1](https://huggingface.co/hotchpotch/japanese-reranker-cross-encoder-large-v1)   |    0.71   |   0.8983 |
+| [japanese-bge-reranker-v2-m3-v1](https://huggingface.co/hotchpotch/japanese-bge-reranker-v2-m3-v1)                       |    0.6918 |   0.8996 |
+| [bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3)                                                     |    0.673  |   0.8909 |
+| [shioriha-large-reranker](https://huggingface.co/cl-nagoya/shioriha-large-reranker)                                      |    0.5775 |   0.83   |
 | [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)                                                      |  0.2445 | 0.4378 |
 | [bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large)                                                    |  0.4718 | 0.7108 |
 | [cross-encoder-mmarco-mMiniLMv2-L12-H384-v1](https://huggingface.co/corrius/cross-encoder-mmarco-mMiniLMv2-L12-H384-v1) |  0.5588 | 0.8107 |
