@@ -16,7 +16,7 @@ class SentenceTransformerReranker(BaseReranker):
         max_seq_length=512,
     ):
         device = self._detect_device(device)
-        self.model = SentenceTransformer(model_name, device=device)
+        self.model = SentenceTransformer(model_name, device=device, trust_remote_code=True)
         if use_fp16 and "cuda" in device:
             self.model.half()
 
