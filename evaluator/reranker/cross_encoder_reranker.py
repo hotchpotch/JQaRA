@@ -17,6 +17,7 @@ class CrossEncoderReranker(BaseReranker):
             model_name,
             device=device,
             default_activation_function=default_activation_function,
+            trust_remote_code=True,
         )
         if use_fp16 and "cuda" in device:
             self.model.model.half()
