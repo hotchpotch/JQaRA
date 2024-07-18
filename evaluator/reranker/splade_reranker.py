@@ -42,17 +42,20 @@ class SpladeReranker(BaseReranker):
         weighted_log = relu_log * attention_mask.unsqueeze(-1)
         max_val, _ = torch.max(weighted_log, dim=1)
         vecs = max_val
-        return vecs, tokens
+        return vecs
 
     def _rerank(self, query: str, documents: list[str]) -> list[float]:
-        query_emb, _ = self._compute_vector([query])
-        query_emb = query_emb.squeeze(0)
+        all_texts = [query] + documents
+        all_embeddings = []
 
-        scores = []
-        for i in range(0, len(documents), self.batch_size):
-            batch = documents[i : i + self.batch_size]
-            document_embs, _ = self._compute_vector(batch)
-            batch_scores = F.cosine_similarity(query_emb.unsqueeze(0), document_embs)
-            scores.extend(batch_scores.tolist())
+        for i in range(0, len(all_texts), self.batch_size):
+            batch = all_texts[i : i + self.batch_size]
+            batch_embeddings = self._compute_vector(batch)
+            all_embeddings.append(batch_embeddings)
 
-        return scores
+        all_embeddings = torch.cat(all_embeddings, dim=0)
+        query_emb = all_embeddings[0]
+        doc_embs = all_embeddings[1:]
+
+        scores = F.cosine_similarity(query_emb.unsqueeze(0), doc_embs)
+        return scores.tolist()
