@@ -1,5 +1,4 @@
 import torch
-
 from reranker.bge_m3_reranker import BGEM3Reranker
 from reranker.bge_reranker import BgeReranker
 from reranker.bm25_reranker import BM25Reranker
@@ -9,6 +8,7 @@ from reranker.minhash_reranker import MinHashReranker
 from reranker.openai_embeddings_reranker import OpenAIEmbeddingsReranker
 from reranker.random_reranker import RandomReranker
 from reranker.sentence_transformer_reranker import SentenceTransformerReranker
+from reranker.splade_reranker import SpladeReranker
 
 
 def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
@@ -100,7 +100,18 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
             default_activation_function=torch.nn.Identity(),
             use_fp16=use_fp16,
         )
-    elif "ce-" in model_name or "cross-encoder" in model_name or "exp" in model_name or "reranker":
+    elif "splade" in model_name:
+        return SpladeReranker(
+            model_name,
+            device=device,
+            use_fp16=use_fp16,
+        )
+    elif (
+        "ce-" in model_name
+        or "cross-encoder" in model_name
+        or "exp" in model_name
+        or "reranker"
+    ):
         return CrossEncoderReranker(
             model_name,
             device=device,
