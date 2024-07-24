@@ -51,7 +51,15 @@ class SpladeReranker(BaseReranker):
 
     def _rerank(self, query: str, documents: list[str]) -> list[float]:
         query_emb = self._compute_vector([query], max_length=self.query_max_length)[0]
-        doc_embs = self._compute_vector(documents, max_length=self.document_max_length)
+        doc_embs = []
+        for i in range(0, len(documents), self.batch_size):
+            doc_embs.append(
+                self._compute_vector(
+                    documents[i : i + self.batch_size],
+                    max_length=self.document_max_length,
+                )
+            )
+        doc_embs = torch.cat(doc_embs, dim=0)
 
         # scores = F.cosine_similarity(query_emb.unsqueeze(0), doc_embs)
         scores = torch.matmul(query_emb.unsqueeze(0), doc_embs.t()).squeeze(0)
