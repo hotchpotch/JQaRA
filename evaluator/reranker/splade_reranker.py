@@ -5,6 +5,13 @@ from transformers import AutoModelForMaskedLM, AutoTokenizer
 from .base_reranker import BaseReranker
 
 
+def splade_max_pooling(logits, attention_mask):
+    relu_log = torch.log(1 + torch.relu(logits))
+    weighted_log = relu_log * attention_mask.unsqueeze(-1)
+    max_val, _ = torch.max(weighted_log, dim=1)
+    return max_val
+
+
 class SpladeReranker(BaseReranker):
     def __init__(
         self,
@@ -38,11 +45,7 @@ class SpladeReranker(BaseReranker):
             output = self.model(**tokens)
         logits, attention_mask = output.logits, tokens["attention_mask"]
 
-        relu_log = torch.log(1 + torch.relu(logits))
-        weighted_log = relu_log * attention_mask.unsqueeze(-1)
-        max_val, _ = torch.max(weighted_log, dim=1)
-        vecs = max_val
-        return vecs
+        return splade_max_pooling(logits, attention_mask)
 
     def _rerank(self, query: str, documents: list[str]) -> list[float]:
         all_texts = [query] + documents
@@ -57,5 +60,7 @@ class SpladeReranker(BaseReranker):
         query_emb = all_embeddings[0]
         doc_embs = all_embeddings[1:]
 
-        scores = F.cosine_similarity(query_emb.unsqueeze(0), doc_embs)
+        # scores = F.cosine_similarity(query_emb.unsqueeze(0), doc_embs)
+        scores = torch.matmul(query_emb.unsqueeze(0), doc_embs.t()).squeeze(0)
+
         return scores.tolist()
