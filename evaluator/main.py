@@ -10,24 +10,24 @@ DEFAULT_CACHE_PATH = Path(__file__).parent / "data/eval_results"
 
 
 def main():
-    parsed_args = parse_args()
+    args = parse_args()
     logger = get_logger()
-    if parsed_args.verbose or parsed_args.debug:
+    if args["verbose"] or args["debug"]:
         logger.setLevel("DEBUG")
     n_samples = None
-    if parsed_args.debug:
+    if args["debug"]:
         n_samples = 20
 
-    if parsed_args.no_cache:
+    if args["no_cache"]:
         cache_path = None
     else:
         cache_path = DEFAULT_CACHE_PATH
-        if parsed_args.debug:
+        if args["debug"]:
             cache_path = cache_path / "debug"
 
-    reporter = reporters[parsed_args.output_format]
+    reporter = reporters[args["output_format"]]
     reranker_names = []
-    for reranker_name in parsed_args.models:
+    for reranker_name in args["models"]:
         if isinstance(reranker_name, list):
             reranker_name = "".join(reranker_name)
         reranker_names.append(reranker_name)
@@ -42,10 +42,11 @@ def main():
         reranker_names=reranker_names,
         df=df,
         cache_path=cache_path,
+        kwargs=args["kwargs"],
     )
 
-    report_metrics = parsed_args.report_metrics.split(",")
-    max_p = parsed_args.max_p_value
+    report_metrics = args["report_metrics"].split(",")
+    max_p = args["max_p_value"]
     report = compare_report(
         qrels=qrel,
         runs=runs,

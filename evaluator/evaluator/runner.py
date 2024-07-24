@@ -44,10 +44,14 @@ def _qrels(df: pd.DataFrame, cache_path: Path | None = None) -> Qrels:
 
 
 def _run_rerank(
-    reranker_name: str, run_name, df: pd.DataFrame, without_title: bool = False
+    reranker_name: str,
+    run_name,
+    df: pd.DataFrame,
+    without_title: bool = False,
+    kwargs: dict = {},
 ) -> Run:
     LOGGER.debug(f"Run: {reranker_name}")
-    reranker = reranker_factory(reranker_name)
+    reranker = reranker_factory(reranker_name, kwargs=kwargs)
     LOGGER.debug(f"- Reranker: {reranker.__class__}")
 
     run_dict = {}
@@ -70,6 +74,7 @@ def _run(
     df: pd.DataFrame,
     without_title: bool = False,
     cache_path: Path | None = None,
+    kwargs: dict = {},
 ) -> Run:
     if Path(reranker_name).exists():
         reranker_path = Path(reranker_name)
@@ -91,6 +96,7 @@ def _run(
         df=df,
         run_name=run_name,
         without_title=without_title,
+        kwargs=kwargs,
     )
     if cache_path is not None:
         LOGGER.debug(f"Save run to cache: {runs_file_path}")
@@ -104,6 +110,7 @@ def runner(
     df: pd.DataFrame,
     without_title: bool = False,
     cache_path: Path | None = None,
+    kwargs: dict = {},
 ):
     qrel = _qrels(df, cache_path=cache_path)
     runs: list[Run] = []
@@ -113,6 +120,7 @@ def runner(
             df=df,
             without_title=without_title,
             cache_path=cache_path,
+            kwargs=kwargs,
         )
         runs.append(run_result)
 

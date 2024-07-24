@@ -18,8 +18,9 @@ class SpladeReranker(BaseReranker):
         model_name: str,
         device: str = "auto",
         use_fp16=True,
-        max_seq_length=512,
         batch_size=16,
+        query_max_length=512,
+        document_max_length=512,
     ):
         device = self._detect_device(device)
         self.model = AutoModelForMaskedLM.from_pretrained(model_name).to(device)
@@ -28,17 +29,18 @@ class SpladeReranker(BaseReranker):
         if use_fp16 and "cuda" in device:
             self.model.half()
 
-        self.max_seq_length = max_seq_length
+        self.query_max_length = query_max_length
+        self.document_max_length = document_max_length
         self.batch_size = batch_size
 
-    def _compute_vector(self, texts):
+    def _compute_vector(self, texts, max_length: int):
         device = self.model.device
         tokens = self.tokenizer(
             texts,
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=self.max_seq_length,
+            max_length=max_length,
         )
         tokens = {k: v.to(device) for k, v in tokens.items()}
         with torch.no_grad():
@@ -48,17 +50,8 @@ class SpladeReranker(BaseReranker):
         return splade_max_pooling(logits, attention_mask)
 
     def _rerank(self, query: str, documents: list[str]) -> list[float]:
-        all_texts = [query] + documents
-        all_embeddings = []
-
-        for i in range(0, len(all_texts), self.batch_size):
-            batch = all_texts[i : i + self.batch_size]
-            batch_embeddings = self._compute_vector(batch)
-            all_embeddings.append(batch_embeddings)
-
-        all_embeddings = torch.cat(all_embeddings, dim=0)
-        query_emb = all_embeddings[0]
-        doc_embs = all_embeddings[1:]
+        query_emb = self._compute_vector([query], max_length=self.query_max_length)[0]
+        doc_embs = self._compute_vector(documents, max_length=self.document_max_length)
 
         # scores = F.cosine_similarity(query_emb.unsqueeze(0), doc_embs)
         scores = torch.matmul(query_emb.unsqueeze(0), doc_embs.t()).squeeze(0)

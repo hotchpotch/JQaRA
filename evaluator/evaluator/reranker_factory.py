@@ -1,4 +1,5 @@
 import torch
+
 from reranker.bge_m3_reranker import BGEM3Reranker
 from reranker.bge_reranker import BgeReranker
 from reranker.bm25_reranker import BM25Reranker
@@ -11,7 +12,7 @@ from reranker.sentence_transformer_reranker import SentenceTransformerReranker
 from reranker.splade_reranker import SpladeReranker
 
 
-def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
+def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwargs={}):
     if "bm25" == model_name:
         return BM25Reranker()
     elif "minhash" in model_name:
@@ -101,10 +102,14 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True):
             use_fp16=use_fp16,
         )
     elif "splade" in model_name:
+        query_max_length = int(kwargs.get("query_max_length", 512))
+        document_max_length = int(kwargs.get("document_max_length", 512))
         return SpladeReranker(
             model_name,
             device=device,
             use_fp16=use_fp16,
+            query_max_length=query_max_length,
+            document_max_length=document_max_length,
         )
     elif (
         "ce-" in model_name
