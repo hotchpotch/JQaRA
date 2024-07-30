@@ -1,8 +1,8 @@
 import torch
 from transformers import AutoModel, AutoTokenizer
+import math
 
 from .base_reranker import BaseReranker
-
 
 def _insert_token(
     output: dict,
@@ -62,10 +62,14 @@ def _insert_token(
 def _colbert_score(q_reps, p_reps, q_mask: torch.Tensor, p_mask: torch.Tensor):
     # calc max sim
     # base code from: https://github.com/FlagOpen/FlagEmbedding/blob/master/FlagEmbedding/BGE_M3/modeling.py
+    
+    # Assert that all q_reps are at least as long as the query length
+    assert q_reps.shape[1] >= q_mask.shape[1], f"q_reps should have at least {q_mask.shape[1]} tokens, but has {q_reps.shape[1]}"
+
     token_scores = torch.einsum("qin,pjn->qipj", q_reps, p_reps)
     token_scores = token_scores.masked_fill(p_mask.unsqueeze(0).unsqueeze(0) == 0, -1e4)
     scores, _ = token_scores.max(-1)
-    scores = scores.sum(1) / q_mask[:, 1:].sum(-1, keepdim=True)
+    scores = scores.sum(1) / q_mask.sum(-1, keepdim=True)
     return scores
 
 
@@ -94,7 +98,7 @@ class ColbertReranker(BaseReranker):
         self.document_token_id: int = self.tokenizer.convert_tokens_to_ids(document_token)  # type: ignore
         self.normalize = normalize
 
-    def _encode(self, texts: list[str], insert_token_id: int):
+    def _encode(self, texts: list[str], insert_token_id: int, is_query: bool = False):
         encoding = self.tokenizer(
             texts,
             return_tensors="pt",
@@ -103,11 +107,45 @@ class ColbertReranker(BaseReranker):
             truncation=True,
         )
         encoding = _insert_token(encoding, insert_token_id)  # type: ignore
+
+        if is_query:
+            mask_token_id = self.tokenizer.mask_token_id
+            
+            new_encodings = {
+                'input_ids': [],
+                'attention_mask': []
+            }
+
+            for i, input_ids in enumerate(encoding['input_ids']):
+                original_length = (input_ids != self.tokenizer.pad_token_id).sum().item()
+                
+                # Calculate QLEN dynamically for each query
+                if original_length % 32 <= 8:
+                    QLEN = original_length + 8
+                else:
+                    QLEN = math.ceil(original_length / 32) * 32
+
+                if original_length < QLEN:
+                    pad_length = QLEN - original_length
+                    padded_input_ids = input_ids.tolist() + [mask_token_id] * pad_length
+                    padded_attention_mask = encoding['attention_mask'][i].tolist() + [0] * pad_length
+                else:
+                    padded_input_ids = input_ids[:QLEN].tolist()
+                    padded_attention_mask = encoding['attention_mask'][i][:QLEN].tolist()
+
+                new_encodings['input_ids'].append(padded_input_ids)
+                new_encodings['attention_mask'].append(padded_attention_mask)
+
+            for key in new_encodings:
+                new_encodings[key] = torch.tensor(new_encodings[key], device=self.device)
+
+            encoding = new_encodings
+
         encoding = {key: value.to(self.device) for key, value in encoding.items()}
         return encoding
 
     def _query_encode(self, query: list[str]):
-        return self._encode(query, self.query_token_id)
+        return self._encode(query, self.query_token_id, is_query=True)
 
     def _document_encode(self, documents: list[str]):
         return self._encode(documents, self.document_token_id)
