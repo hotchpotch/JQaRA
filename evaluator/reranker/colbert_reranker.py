@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoModel, AutoTokenizer
+from transformers import BertPreTrainedModel, BertModel, AutoTokenizer
 import math
 
 from .base_reranker import BaseReranker
@@ -72,6 +72,43 @@ def _colbert_score(q_reps, p_reps, q_mask: torch.Tensor, p_mask: torch.Tensor):
     scores = scores.sum(1) / q_mask.sum(-1, keepdim=True)
     return scores
 
+class ColBERTModel(BertPreTrainedModel):
+    def __init__(self, config):
+        super().__init__(config)
+        self.bert = BertModel(config)
+        self.linear = torch.nn.Linear(config.hidden_size, 128, bias=False)
+        self.init_weights()
+
+    def forward(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        token_type_ids=None,
+        position_ids=None,
+        head_mask=None,
+        inputs_embeds=None,
+        encoder_hidden_states=None,
+        encoder_attention_mask=None,
+        output_attentions=None,
+        output_hidden_states=None,
+    ):
+        outputs = self.bert(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_attention_mask,
+            output_attentions=output_attentions,
+            output_hidden_states=True,  # Always output hidden states
+        )
+
+        sequence_output = outputs[0]  
+
+        return self.linear(sequence_output)
+
 
 class ColbertReranker(BaseReranker):
     def __init__(
@@ -86,7 +123,8 @@ class ColbertReranker(BaseReranker):
     ):
         device = self._detect_device(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModel.from_pretrained(model_name)
+        self.model = ColBERTModel.from_pretrained(model_name)
+        # self.model = AutoModel.from_pretrained(model_name)
         self.device = device
         self.model.to(device)
         if use_fp16 and "cuda" in device:
@@ -152,7 +190,8 @@ class ColbertReranker(BaseReranker):
 
     def _to_embs(self, encoding) -> torch.Tensor:
         with torch.no_grad():
-            embs = self.model(**encoding).last_hidden_state.squeeze(1)
+            # embs = self.model(**encoding).last_hidden_state.squeeze(1)
+            embs = self.model(**encoding)
         if self.normalize:
             embs = embs / embs.norm(dim=-1, keepdim=True)
         return embs
