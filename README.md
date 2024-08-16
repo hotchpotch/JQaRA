@@ -47,10 +47,11 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 | model_names                                               | ndcg@10 | mrr@10 |
 | :-------------------------------------------------------- | ------: | -----: |
 | [bge-m3+colbert](https://huggingface.co/BAAI/bge-m3)      |  0.5656 | 0.8095 |
-| [JaColBERT](https://huggingface.co/bclavie/JaColBERT)             |    0.5647 |   0.8145 |
-| [JaColBERTv2](https://huggingface.co/bclavie/JaColBERTv2)         |    0.5932 |   0.8352 |
-| [JaColBERTv2.4](https://huggingface.co/answerdotai/JaColBERTv2.4) |    0.6007 |   0.8465 |
-| [JaColBERTv2.5](https://huggingface.co/answerdotai/JaColBERTv2.5) |    0.6174 |   0.8562 |
+| [JaColBERT](https://huggingface.co/bclavie/JaColBERT)             |    0.5488 |   0.8116 |
+| [JaColBERTv2](https://huggingface.co/bclavie/JaColBERTv2)         |    0.5906 |   0.8316 |
+| [JaColBERTv2.4](https://huggingface.co/answerdotai/JaColBERTv2.4) |    0.6265 |   0.8556 |
+| [JaColBERTv2.5](https://huggingface.co/answerdotai/JaColBERTv2.5) |    0.642  |   0.8647 |
+
 
 
 #### CrossEncoder モデル
