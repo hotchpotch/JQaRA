@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoModel, AutoTokenizer
+from transformers import BertPreTrainedModel, BertModel, AutoTokenizer
 import math
 
 from .base_reranker import BaseReranker
@@ -72,14 +72,11 @@ def _colbert_score(q_reps, p_reps, q_mask: torch.Tensor, p_mask: torch.Tensor):
     scores = scores.sum(1) / q_mask.sum(-1, keepdim=True)
     return scores
 
-from transformers import BertPreTrainedModel, BertModel
-import torch.nn as nn
-
 class ColBERTModel(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.bert = BertModel(config)
-        self.linear = nn.Linear(config.hidden_size, 128, bias=False)
+        self.linear = torch.nn.Linear(config.hidden_size, 128, bias=False)
         self.init_weights()
 
     def forward(
