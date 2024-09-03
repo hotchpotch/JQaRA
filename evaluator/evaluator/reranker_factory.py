@@ -115,7 +115,7 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
         "ce-" in model_name
         or "cross-encoder" in model_name
         or "exp" in model_name
-        or "reranker"
+        or "reranker" in model_name
     ):
         return CrossEncoderReranker(
             model_name,
