@@ -121,7 +121,8 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
             model_name,
             device=device,
             use_fp16=use_fp16,
-    elif "cl-nagoya/ruri-" in reranker_name:
+        )
+    elif "cl-nagoya/ruri-" in model_name:
         # for ruri-small, ruri-base, ruri-large models
         return SentenceTransformerReranker(
             model_name,
