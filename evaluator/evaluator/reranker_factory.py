@@ -21,12 +21,13 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
         return RandomReranker()
     elif "text-embedding-" in model_name:
         return OpenAIEmbeddingsReranker(model_name)
-    elif "-e5-" in model_name:
+    elif "-e5-" in model_name or "pkshatech/GLuCoSE-base-ja-v2" in model_name:
         if "+query" in model_name:
             model_name = model_name.replace("+query", "")
             query_prefix = "query: "
             document_prefix = "query: "
         else:
+            # for e5 and GLuCoSE-base-ja-v2
             query_prefix = "query: "
             document_prefix = "passage: "
         return SentenceTransformerReranker(
@@ -116,6 +117,7 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
         or "cross-encoder" in model_name
         or "exp" in model_name
         or "reranker" in model_name
+        or "cl-nagoya/ruri-reranker-" in model_name
     ):
         return CrossEncoderReranker(
             model_name,
