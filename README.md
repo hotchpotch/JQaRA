@@ -27,7 +27,7 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 
 以下はさまざまなモデルの評価結果です。評価は nDCG@10 以外にも、参考まで MRR@10 の数値も掲載しています。
 
-#### 文ベクトルモデル
+#### 密な文ベクトルモデル
 
 | model_names                                                                     | ndcg@10 | mrr@10 |
 | :------------------------------------------------------------------------------ | ------: | -----: |
@@ -40,7 +40,12 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 | [multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large)  |   0.554 | 0.7988 |
 | [multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small)  |  0.4917 | 0.7291 |
 | [GLuCoSE-base-ja](https://huggingface.co/pkshatech/GLuCoSE-base-ja)             |  0.3085 | 0.5179 |
+| [GLuCoSE-base-ja-v2](https://huggingface.co/pkshatech/GLuCoSE-base-ja-v2)   |    0.606  |   0.8359 |
 | [text-embedding-3-small](https://platform.openai.com/docs/guides/embeddings)    |  0.3881 | 0.6107 |
+| [ruri-large](https://huggingface.co/cl-nagoya/ruri-large)                   |    0.6287 |   0.8418 |
+| [ruri-base](https://huggingface.co/cl-nagoya/ruri-base)                     |    0.5833 |   0.8093 |
+| [ruri-small](https://huggingface.co/cl-nagoya/ruri-small)                   |    0.5359 |   0.7661 |
+
 
 #### ColBERT モデル
 
@@ -68,6 +73,10 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 | [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)                                                      |  0.2445 | 0.4378 |
 | [bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large)                                                    |  0.4718 | 0.7108 |
 | [cross-encoder-mmarco-mMiniLMv2-L12-H384-v1](https://huggingface.co/corrius/cross-encoder-mmarco-mMiniLMv2-L12-H384-v1) |  0.5588 | 0.8107 |
+| [ruri-reranker-small](https://huggingface.co/cl-nagoya/ruri-reranker-small) |    0.6453 |   0.8637 |
+| [ruri-reranker-base](https://huggingface.co/cl-nagoya/ruri-reranker-base)   |    0.7429 |   0.9113 |
+| [ruri-reranker-large](https://huggingface.co/cl-nagoya/ruri-reranker-large) |    0.7712 |   0.9098 |
+
 
 #### その他モデル
 
