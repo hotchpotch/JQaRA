@@ -77,14 +77,19 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 | [ruri-reranker-base](https://huggingface.co/cl-nagoya/ruri-reranker-base)   |    0.7429 |   0.9113 |
 | [ruri-reranker-large](https://huggingface.co/cl-nagoya/ruri-reranker-large) |    0.7712 |   0.9098 |
 
+#### スパースベクトルモデル
+
+| model_names                                         | ndcg@10 | mrr@10 |
+| :-------------------------------------------------- | ------: | -----: |
+| [japanese-splade-base-v1](https://huggingface.co/hotchpotch/japanese-splade-base-v1) |    0.6441 |   0.8616 |
+| [bge-m3+sparse](https://huggingface.co/BAAI/bge-m3) |  0.5088 | 0.7596 |
+| bm25                                                |   0.458 |  0.702 |
 
 #### その他モデル
 
 | model_names                                         | ndcg@10 | mrr@10 |
 | :-------------------------------------------------- | ------: | -----: |
 | [bge-m3+all](https://huggingface.co/BAAI/bge-m3)    |   0.576 | 0.8178 |
-| [bge-m3+sparse](https://huggingface.co/BAAI/bge-m3) |  0.5088 | 0.7596 |
-| bm25                                                |   0.458 |  0.702 |
 
 ---
 
