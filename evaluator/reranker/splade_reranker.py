@@ -23,7 +23,7 @@ class SpladeReranker(BaseReranker):
         document_max_length=512,
     ):
         device = self._detect_device(device)
-        self.model = AutoModelForMaskedLM.from_pretrained(model_name).to(device)
+        self.model = AutoModelForMaskedLM.from_pretrained(model_name, trust_remote_code=True).to(device)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model.eval()
         if use_fp16 and "cuda" in device:
