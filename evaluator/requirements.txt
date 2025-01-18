@@ -12,3 +12,4 @@ transformers
 datasets
 sentencepiece
 datasketch
+peft
