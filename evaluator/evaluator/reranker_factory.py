@@ -12,7 +12,7 @@ from reranker.sentence_transformer_reranker import SentenceTransformerReranker
 from reranker.splade_reranker import SpladeReranker
 
 
-def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwargs={}):
+def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, use_bf16=False, kwargs={}):
     if "bm25" == model_name:
         return BM25Reranker()
     elif "minhash" in model_name:
@@ -35,6 +35,7 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
             query_prefix=query_prefix,
             document_prefix=document_prefix,
             use_fp16=use_fp16,
+            use_bf16=use_bf16,
             device=device,
         )
     elif "fio-" in model_name:
@@ -42,6 +43,7 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
             model_name,
             query_prefix="関連記事を取得するために使用できるこの文の表現を生成します: ",
             use_fp16=use_fp16,
+            use_bf16=use_bf16,
             device=device,
         )
     elif "bge-m3" in model_name:
@@ -130,8 +132,30 @@ def reranker_factory(model_name: str, device: str = "auto", use_fp16=True, kwarg
             model_name,
             device=device,
             use_fp16=use_fp16,
+            use_bf16=use_bf16,
             query_prefix="クエリ: ",
             document_prefix="文章: ",
         )
+    elif "embeddinggemma" in model_name or "google/embeddinggemma" in model_name:
+        # EmbeddingGemma with search task prefix
+        query_prefix = "task: search result | query: "
+        # query_prefix = "task: question answering | query: "
+        document_prefix = "title: none | text: "
+        
+        # Normalize model name
+        if not model_name.startswith("google/"):
+            model_name = "google/embeddinggemma-300m"
+        
+        # Use bfloat16 for EmbeddingGemma
+        return SentenceTransformerReranker(
+            model_name,
+            query_prefix=query_prefix,
+            document_prefix=document_prefix,
+            use_fp16=False,  # Disable fp16
+            use_bf16=True,   # Use bf16 for Gemma
+            device=device,
+            max_seq_length=512,
+            normalize_embeddings=False,
+        )
     else:
-        return SentenceTransformerReranker(model_name, device=device, use_fp16=use_fp16)
+        return SentenceTransformerReranker(model_name, device=device, use_fp16=use_fp16, use_bf16=use_bf16)

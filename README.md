@@ -46,6 +46,7 @@ JQaRA は質問に対して、候補となる 100 件のデータ(一件以上�
 | [ruri-base](https://huggingface.co/cl-nagoya/ruri-base)                     |    0.5833 |   0.8093 |
 | [ruri-small](https://huggingface.co/cl-nagoya/ruri-small)                   |    0.5359 |   0.7661 |
 | [static-embedding-japanese](https://huggingface.co/hotchpotch/static-embedding-japanese) |    0.4704 |   0.6814 |
+| [embeddinggemma-300m](https://huggingface.co/google/embeddinggemma-300m)     |    0.261  |   0.457  |
 
 
 #### ColBERT モデル
